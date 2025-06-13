@@ -1,0 +1,81 @@
+# PNP Television Subscription Bot - Hybrid Version
+# Multi-stage Docker build for production deployment
+
+# Build stage
+FROM python:3.11-slim as builder
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and activate virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt
+
+# Production stage
+FROM python:3.11-slim as production
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH"
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user for security
+RUN groupadd -r botuser && \
+    useradd -r -g botuser -d /app -s /sbin/nologin botuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy virtual environment from builder stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Copy application code
+COPY . /app/
+
+# Create required directories
+RUN mkdir -p /app/data /app/logs /app/backups && \
+    chown -R botuser:botuser /app
+
+# Switch to non-root user
+USER botuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)" || exit 1
+
+# Expose port (if using webhooks)
+EXPOSE 8080
+
+# Default command
+CMD ["python", "main.py"]
+
+# Alternative commands for different deployment scenarios:
+# For development:
+# CMD ["python", "main.py", "--log-level", "DEBUG"]
+# 
+# For production with webhook:
+# CMD ["python", "main.py", "--webhook"]
+#
+# For running with gunicorn (if web interface added):
+# CMD ["gunicorn", "--bind", "0.0.0.0:8080", "app:app"]

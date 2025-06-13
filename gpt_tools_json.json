@@ -1,0 +1,484 @@
+{
+  "fitness_business_tools": {
+    "todo_lists": {
+      "daily_operations": {
+        "name": "Operaciones Diarias Fitness",
+        "description": "Lista de tareas diarias para gestión automatizada",
+        "categories": [
+          {
+            "category": "Contenido",
+            "tasks": [
+              {
+                "id": "content_001",
+                "task": "Revisar contenido programado para hoy",
+                "priority": "high",
+                "estimated_time": 15,
+                "automation_status": "automated",
+                "responsible": "bot_telegram"
+              },
+              {
+                "id": "content_002", 
+                "task": "Generar rutina personalizada para nuevos usuarios",
+                "priority": "medium",
+                "estimated_time": 30,
+                "automation_status": "semi_automated",
+                "responsible": "chatgpt_integration"
+              },
+              {
+                "id": "content_003",
+                "task": "Actualizar calendario de eventos del mes",
+                "priority": "low",
+                "estimated_time": 20,
+                "automation_status": "manual",
+                "responsible": "admin"
+              }
+            ]
+          },
+          {
+            "category": "Clientes",
+            "tasks": [
+              {
+                "id": "customer_001",
+                "task": "Responder consultas pendientes en Telegram",
+                "priority": "high", 
+                "estimated_time": 45,
+                "automation_status": "automated",
+                "responsible": "chatgpt_bot"
+              },
+              {
+                "id": "customer_002",
+                "task": "Revisar renovaciones próximas (7 días)",
+                "priority": "high",
+                "estimated_time": 20,
+                "automation_status": "automated",
+                "responsible": "hubspot_workflow"
+              },
+              {
+                "id": "customer_003",
+                "task": "Seguimiento clientes inactivos (>7 días)",
+                "priority": "medium",
+                "estimated_time": 30,
+                "automation_status": "semi_automated",
+                "responsible": "email_automation"
+              }
+            ]
+          },
+          {
+            "category": "Marketing",
+            "tasks": [
+              {
+                "id": "marketing_001",
+                "task": "Publicar en redes sociales (Instagram, TikTok)",
+                "priority": "high",
+                "estimated_time": 25,
+                "automation_status": "scheduled",
+                "responsible": "social_media_scheduler"
+              },
+              {
+                "id": "marketing_002",
+                "task": "Analizar métricas de engagement",
+                "priority": "medium",
+                "estimated_time": 35,
+                "automation_status": "automated",
+                "responsible": "analytics_dashboard"
+              },
+              {
+                "id": "marketing_003",
+                "task": "Optimizar campañas publicitarias",
+                "priority": "medium",
+                "estimated_time": 40,
+                "automation_status": "manual",
+                "responsible": "admin"
+              }
+            ]
+          }
+        ]
+      },
+      
+      "weekly_operations": {
+        "name": "Operaciones Semanales",
+        "description": "Tareas semanales de gestión y estrategia",
+        "categories": [
+          {
+            "category": "Análisis",
+            "tasks": [
+              {
+                "id": "analysis_001",
+                "task": "Generar reporte semanal de KPIs",
+                "priority": "high",
+                "estimated_time": 60,
+                "automation_status": "automated",
+                "responsible": "hubspot_analytics"
+              },
+              {
+                "id": "analysis_002",
+                "task": "Revisar feedback de clientes",
+                "priority": "medium",
+                "estimated_time": 45,
+                "automation_status": "semi_automated",
+                "responsible": "sentiment_analysis"
+              }
+            ]
+          },
+          {
+            "category": "Planificación",
+            "tasks": [
+              {
+                "id": "planning_001",
+                "task": "Planificar contenido próxima semana",
+                "priority": "high",
+                "estimated_time": 90,
+                "automation_status": "manual",
+                "responsible": "content_manager"
+              },
+              {
+                "id": "planning_002",
+                "task": "Revisar inventario de equipos para eventos",
+                "priority": "low",
+                "estimated_time": 30,
+                "automation_status": "manual",
+                "responsible": "admin"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    
+    "customer_management": {
+      "name": "Gestión de Clientes",
+      "workflows": [
+        {
+          "id": "onboarding_flow",
+          "name": "Proceso de Bienvenida",
+          "steps": [
+            {
+              "step": 1,
+              "action": "Enviar bienvenida personalizada vía Telegram",
+              "automation": "telegram_bot",
+              "delay": "immediate",
+              "template": "welcome_new_subscriber"
+            },
+            {
+              "step": 2,
+              "action": "Agregar a Google Sheets database",
+              "automation": "zapier_integration",
+              "delay": "5_minutes",
+              "data_fields": ["name", "email", "subscription_tier", "start_date"]
+            },
+            {
+              "step": 3,
+              "action": "Enviar primera rutina personalizada",
+              "automation": "chatgpt_api",
+              "delay": "30_minutes",
+              "personalization": ["fitness_level", "goals", "available_time"]
+            },
+            {
+              "step": 4,
+              "action": "Programar follow-up en 3 días",
+              "automation": "hubspot_workflow",
+              "delay": "3_days",
+              "template": "check_in_new_user"
+            }
+          ]
+        },
+        
+        {
+          "id": "retention_flow",
+          "name": "Flujo de Retención",
+          "triggers": ["7_days_inactive", "low_engagement", "cancellation_intent"],
+          "steps": [
+            {
+              "step": 1,
+              "action": "Detectar patrón de inactividad",
+              "automation": "analytics_engine",
+              "condition": "no_interaction_7_days"
+            },
+            {
+              "step": 2,
+              "action": "Enviar contenido re-engagement",
+              "automation": "email_sequence",
+              "template": "win_back_campaign",
+              "personalization": true
+            },
+            {
+              "step": 3,
+              "action": "Ofrecer descuento o beneficio",
+              "automation": "promo_engine",
+              "discount_type": "percentage",
+              "value": 20
+            }
+          ]
+        }
+      ]
+    },
+    
+    "content_automation": {
+      "name": "Automatización de Contenido",
+      "scheduling": {
+        "daily_posts": {
+          "morning_motivation": {
+            "time": "06:00",
+            "content_type": "video_short",
+            "duration": "60_seconds",
+            "theme": "motivation_energy",
+            "automation": "content_scheduler"
+          },
+          "midday_nutrition": {
+            "time": "12:00", 
+            "content_type": "image_text",
+            "theme": "nutrition_tips",
+            "automation": "content_scheduler"
+          },
+          "evening_workout": {
+            "time": "18:00",
+            "content_type": "video_long",
+            "duration": "45_minutes",
+            "theme": "main_workout",
+            "automation": "content_scheduler"
+          },
+          "night_recovery": {
+            "time": "21:00",
+            "content_type": "audio_guided",
+            "duration": "15_minutes", 
+            "theme": "stretching_recovery",
+            "automation": "content_scheduler"
+          }
+        }
+      },
+      
+      "content_generation": {
+        "chatgpt_prompts": [
+          {
+            "id": "workout_generator",
+            "prompt": "Genera una rutina de ejercicios personalizada para {{user_name}} con nivel {{fitness_level}}, objetivo {{goal}}, tiempo disponible {{available_time}} minutos, equipo disponible {{equipment}}. Incluye calentamiento, ejercicios principales con repeticiones/tiempo, y enfriamiento. Formato: JSON con estructura detallada.",
+            "variables": ["user_name", "fitness_level", "goal", "available_time", "equipment"],
+            "output_format": "json"
+          },
+          {
+            "id": "nutrition_tip",
+            "prompt": "Crea un tip nutricional para personas que hacen {{workout_type}}, enfocado en {{nutrition_goal}}. Debe ser accionable, basado en evidencia, y de máximo 280 caracteres para redes sociales.",
+            "variables": ["workout_type", "nutrition_goal"],
+            "output_format": "text"
+          },
+          {
+            "id": "motivation_message",
+            "prompt": "Escribe un mensaje motivacional personalizado para {{user_name}} que lleva {{days_active}} días activo y su objetivo es {{goal}}. Tono: {{tone_preference}}. Incluye emoji relevantes.",
+            "variables": ["user_name", "days_active", "goal", "tone_preference"],
+            "output_format": "text"
+          }
+        ]
+      }
+    },
+    
+    "analytics_dashboard": {
+      "name": "Dashboard de Métricas",
+      "kpis": [
+        {
+          "metric": "daily_active_users",
+          "source": "telegram_analytics",
+          "calculation": "unique_users_last_24h",
+          "target": 100,
+          "alert_threshold": 80
+        },
+        {
+          "metric": "content_engagement_rate", 
+          "source": "telegram_analytics",
+          "calculation": "(reactions + comments + shares) / total_views * 100",
+          "target": 15,
+          "alert_threshold": 10
+        },
+        {
+          "metric": "subscription_conversion_rate",
+          "source": "hubspot_analytics",
+          "calculation": "paid_subscribers / trial_users * 100",
+          "target": 25,
+          "alert_threshold": 20
+        },
+        {
+          "metric": "monthly_churn_rate",
+          "source": "payment_processor",
+          "calculation": "cancelled_subscriptions / total_subscribers * 100",
+          "target": 5,
+          "alert_threshold": 8
+        },
+        {
+          "metric": "customer_lifetime_value",
+          "source": "crm_analytics",
+          "calculation": "avg_monthly_revenue * avg_subscription_months",
+          "target": 300,
+          "alert_threshold": 250
+        }
+      ],
+      
+      "reports": [
+        {
+          "name": "daily_operations_report",
+          "frequency": "daily",
+          "delivery_time": "09:00",
+          "recipients": ["admin@fitflow.com"],
+          "sections": [
+            "new_subscribers",
+            "content_performance", 
+            "customer_support_metrics",
+            "revenue_update"
+          ]
+        },
+        {
+          "name": "weekly_business_review",
+          "frequency": "weekly",
+          "delivery_day": "monday",
+          "delivery_time": "08:00",
+          "recipients": ["admin@fitflow.com", "marketing@fitflow.com"],
+          "sections": [
+            "kpi_summary",
+            "growth_metrics",
+            "customer_feedback",
+            "competitive_analysis",
+            "action_items"
+          ]
+        }
+      ]
+    },
+    
+    "integration_apis": {
+      "telegram_bot": {
+        "base_url": "https://api.telegram.org/bot{{BOT_TOKEN}}",
+        "methods": [
+          {
+            "name": "sendMessage",
+            "endpoint": "/sendMessage",
+            "parameters": ["chat_id", "text", "parse_mode", "reply_markup"]
+          },
+          {
+            "name": "sendVideo",
+            "endpoint": "/sendVideo", 
+            "parameters": ["chat_id", "video", "caption", "duration"]
+          },
+          {
+            "name": "getUpdates",
+            "endpoint": "/getUpdates",
+            "parameters": ["offset", "limit", "timeout"]
+          }
+        ]
+      },
+      
+      "hubspot_crm": {
+        "base_url": "https://api.hubapi.com",
+        "endpoints": [
+          {
+            "name": "create_contact",
+            "method": "POST",
+            "endpoint": "/crm/v3/objects/contacts",
+            "auth": "Bearer {{HUBSPOT_API_KEY}}"
+          },
+          {
+            "name": "get_deals",
+            "method": "GET", 
+            "endpoint": "/crm/v3/objects/deals",
+            "auth": "Bearer {{HUBSPOT_API_KEY}}"
+          },
+          {
+            "name": "create_workflow",
+            "method": "POST",
+            "endpoint": "/automation/v4/workflows",
+            "auth": "Bearer {{HUBSPOT_API_KEY}}"
+          }
+        ]
+      },
+      
+      "chatgpt_api": {
+        "base_url": "https://api.openai.com/v1",
+        "endpoints": [
+          {
+            "name": "chat_completion",
+            "method": "POST",
+            "endpoint": "/chat/completions",
+            "auth": "Bearer {{OPENAI_API_KEY}}",
+            "parameters": {
+              "model": "gpt-4",
+              "messages": [],
+              "max_tokens": 1000,
+              "temperature": 0.7
+            }
+          }
+        ]
+      },
+      
+      "google_sheets": {
+        "base_url": "https://sheets.googleapis.com/v4/spreadsheets",
+        "methods": [
+          {
+            "name": "read_range",
+            "endpoint": "/{{SPREADSHEET_ID}}/values/{{RANGE}}",
+            "method": "GET"
+          },
+          {
+            "name": "update_range",
+            "endpoint": "/{{SPREADSHEET_ID}}/values/{{RANGE}}",
+            "method": "PUT"
+          },
+          {
+            "name": "append_data",
+            "endpoint": "/{{SPREADSHEET_ID}}/values/{{RANGE}}:append",
+            "method": "POST"
+          }
+        ]
+      }
+    },
+    
+    "automated_sequences": {
+      "email_campaigns": [
+        {
+          "name": "welcome_series",
+          "trigger": "new_subscription",
+          "emails": [
+            {
+              "day": 0,
+              "subject": "¡Bienvenido a FitFlow Academy! 🏋️",
+              "template": "welcome_email_1",
+              "cta": "Accede a tu primera rutina"
+            },
+            {
+              "day": 3,
+              "subject": "¿Cómo van tus primeros entrenamientos?",
+              "template": "check_in_email",
+              "cta": "Cuéntanos tu progreso"
+            },
+            {
+              "day": 7,
+              "subject": "Desbloquea tu potencial con rutinas avanzadas",
+              "template": "upgrade_promotion",
+              "cta": "Mejorar a Premium"
+            }
+          ]
+        },
+        
+        {
+          "name": "retention_campaign",
+          "trigger": "low_engagement",
+          "emails": [
+            {
+              "day": 0,
+              "subject": "Te extrañamos en FitFlow 💪",
+              "template": "re_engagement_1",
+              "cta": "Volver a entrenar"
+            },
+            {
+              "day": 3,
+              "subject": "Rutina especial para retomar el ritmo",
+              "template": "comeback_workout",
+              "cta": "Empezar ahora"
+            },
+            {
+              "day": 7,
+              "subject": "20% OFF para que vuelvas más fuerte",
+              "template": "discount_offer",
+              "cta": "Reclamar descuento"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

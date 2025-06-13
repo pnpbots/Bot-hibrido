@@ -1,0 +1,20 @@
+# PNP Subscription Bot Dependencies
+# Core Telegram Bot functionality
+python-telegram-bot>=20.6
+
+# Standard library enhancements (included in Python 3.8+)
+# These are listed for documentation purposes
+# pathlib - Path handling (built-in)
+# dataclasses - Configuration management (built-in Python 3.7+)
+# json - Data persistence (built-in)
+# logging - Error tracking and debugging (built-in)
+# datetime - Date/time handling (built-in)
+# os - Environment variables (built-in)
+# argparse - Command line arguments (built-in)
+
+# Development dependencies (optional)
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0
+# black>=22.0.0
+# flake8>=5.0.0
+# mypy>=1.0.0
