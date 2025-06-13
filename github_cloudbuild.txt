@@ -1,0 +1,162 @@
+# cloudbuild.yaml - Google Cloud Build Configuration
+# Builds PNP Bot directly from GitHub repository
+
+# =============================================================================
+# Build Steps
+# =============================================================================
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-image'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/pnp-bot:$COMMIT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/pnp-bot:latest', 
+      '-t', 'gcr.io/$PROJECT_ID/pnp-bot:$BRANCH_NAME',
+      '--cache-from', 'gcr.io/$PROJECT_ID/pnp-bot:latest',
+      '--build-arg', 'BUILDKIT_INLINE_CACHE=1',
+      '.'
+    ]
+    timeout: 600s
+
+  # Step 2: Push image with commit SHA
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-commit-sha'
+    args: ['push', 'gcr.io/$PROJECT_ID/pnp-bot:$COMMIT_SHA']
+    waitFor: ['build-image']
+
+  # Step 3: Push latest tag (only for main branch)
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-latest'
+    args: ['push', 'gcr.io/$PROJECT_ID/pnp-bot:latest']
+    waitFor: ['build-image']
+
+  # Step 4: Push branch tag
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-branch'
+    args: ['push', 'gcr.io/$PROJECT_ID/pnp-bot:$BRANCH_NAME']
+    waitFor: ['build-image']
+
+  # Step 5: Deploy to Cloud Run (only for main/production branches)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'deploy-cloud-run'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "production" ]]; then
+          echo "🚀 Deploying to Cloud Run from branch: $BRANCH_NAME"
+          
+          # Deploy to Cloud Run
+          gcloud run deploy pnp-bot \
+            --image gcr.io/$PROJECT_ID/pnp-bot:$COMMIT_SHA \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --memory 1Gi \
+            --cpu 1 \
+            --min-instances 1 \
+            --max-instances 3 \
+            --timeout 3600 \
+            --concurrency 80 \
+            --port 8080 \
+            --set-env-vars="LOG_LEVEL=INFO" \
+            --set-env-vars="ENABLE_SCHEDULER=true" \
+            --set-env-vars="ENABLE_ADMIN_PANEL=true" \
+            --set-env-vars="ENABLE_ANALYTICS=true" \
+            --set-env-vars="CHANNEL_NAME=PNP Television" \
+            --set-secrets="BOT_TOKEN=bot-token:latest" \
+            --set-secrets="ADMIN_USER_ID=admin-user-id:latest" \
+            --tag="commit-$SHORT_SHA" \
+            --revision-suffix="$SHORT_SHA"
+            
+          # Get service URL
+          SERVICE_URL=$(gcloud run services describe pnp-bot --region=us-central1 --format='value(status.url)')
+          echo "✅ Deployment successful!"
+          echo "🌐 Service URL: $SERVICE_URL"
+        else
+          echo "⏭️  Skipping deployment for branch: $BRANCH_NAME"
+        fi
+    waitFor: ['push-commit-sha']
+
+  # Step 6: Run tests (optional)
+  - name: 'gcr.io/$PROJECT_ID/pnp-bot:$COMMIT_SHA'
+    id: 'run-tests'
+    entrypoint: 'python'
+    args: ['run_hybrid_bot.py', '--validate-only', '--verbose']
+    waitFor: ['push-commit-sha']
+
+  # Step 7: Security scan (optional)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'security-scan'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🔍 Running security scan..."
+        gcloud container images scan gcr.io/$PROJECT_ID/pnp-bot:$COMMIT_SHA \
+          --format='value(response.scan.vulnerabilities[].effectiveSeverity)' \
+          | sort | uniq -c || true
+    waitFor: ['push-commit-sha']
+
+# =============================================================================
+# Build Configuration
+# =============================================================================
+
+# Timeout for entire build
+timeout: 1800s  # 30 minutes
+
+# Build options
+options:
+  # Use high-performance machine type
+  machineType: 'E2_HIGHCPU_8'
+  
+  # Enable logging
+  logging: CLOUD_LOGGING_ONLY
+  
+  # Use substitute variables
+  substitution_option: 'ALLOW_LOOSE'
+  
+  # Docker configuration
+  env:
+    - 'DOCKER_BUILDKIT=1'
+
+# =============================================================================
+# Substitutions (Variables)
+# =============================================================================
+substitutions:
+  # Default values for manual triggers
+  _DEPLOY_REGION: 'us-central1'
+  _SERVICE_NAME: 'pnp-bot'
+  _MIN_INSTANCES: '1'
+  _MAX_INSTANCES: '3'
+  _MEMORY: '1Gi'
+  _CPU: '1'
+  
+# =============================================================================
+# Available Triggers Configuration
+# =============================================================================
+
+# Trigger 1: Main branch push (production deployment)
+# - name: pnp-bot-main-deploy
+# - github:
+#     owner: your-github-username
+#     name: pnp-bot-repo
+#     push:
+#       branch: ^main$
+
+# Trigger 2: Pull request (testing only)  
+# - name: pnp-bot-pr-test
+# - github:
+#     owner: your-github-username
+#     name: pnp-bot-repo
+#     pullRequest:
+#       branch: .*
+
+# Trigger 3: Tag push (release deployment)
+# - name: pnp-bot-release
+# - github:
+#     owner: your-github-username
+#     name: pnp-bot-repo
+#     push:
+#       tag: v.*

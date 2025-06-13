@@ -1,0 +1,29 @@
+# =============================================================================
+# .dockerignore - PNP Television Bot
+# Excluye archivos innecesarios del contexto de build de Docker
+# =============================================================================
+
+# =============================================================================
+# Version Control
+# =============================================================================
+.git
+.gitignore
+.gitattributes
+.github/
+
+# =============================================================================
+# Development Files  
+# =============================================================================
+README.md
+CHANGELOG.md
+LICENSE
+docs/
+*.md
+
+# Development scripts
+setup-github-deploy.sh
+deploy.sh
+install.sh
+
+# IDE and editor files
+.vsc

@@ -1,0 +1,110 @@
+# PNP Television Subscription Bot - Dockerfile para GitHub Deploy
+# Multi-stage build optimizado para producción
+
+# =============================================================================
+# Build Stage - Preparación del entorno
+# =============================================================================
+FROM python:3.11-slim as builder
+
+# Metadatos del contenedor
+LABEL maintainer="PNP Television <soporte@pnptv.com>"
+LABEL description="PNP Television Subscription Bot - Hybrid Version"
+LABEL version="2.0.0"
+
+# Variables de entorno para el build
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VENV_IN_PROJECT=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
+
+# Instalar dependencias del sistema para el build
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencias
+COPY requirements.txt /app/requirements.txt
+
+# Crear y activar virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Instalar dependencias Python
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# =============================================================================
+# Production Stage - Imagen final optimizada
+# =============================================================================
+FROM python:3.11-slim as production
+
+# Variables de entorno para producción
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    DEBIAN_FRONTEND=noninteractive
+
+# Instalar dependencias runtime mínimas
+RUN apt-get update && apt-get install -y \
+    sqlite3 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Crear usuario no-root para seguridad
+RUN groupadd -r botuser && \
+    useradd -r -g botuser -d /app -s /sbin/nologin -c "Bot User" botuser
+
+# Crear directorios necesarios
+RUN mkdir -p /app/data /app/logs /app/backups /app/translations
+
+# Copiar virtual environment desde build stage
+COPY --from=builder /opt/venv /opt/venv
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar código fuente del bot
+COPY --chown=botuser:botuser . /app/
+
+# Asegurar permisos correctos
+RUN chown -R botuser:botuser /app && \
+    chmod +x /app/run_hybrid_bot.py && \
+    chmod +x /app/main.py
+
+# Cambiar a usuario no-root
+USER botuser
+
+# Crear archivo de versión
+RUN echo "PNP Bot Hybrid v2.0.0 - Built $(date)" > /app/VERSION
+
+# Health check para monitoreo
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)" || exit 1
+
+# Exponer puerto para webhook (opcional)
+EXPOSE 8080
+
+# Variables de entorno por defecto
+ENV LOG_LEVEL=INFO \
+    ENABLE_SCHEDULER=true \
+    ENABLE_ADMIN_PANEL=true \
+    ENABLE_ANALYTICS=true \
+    DATABASE_URL=sqlite:///data/pnp_bot.db
+
+# Comando por defecto
+CMD ["python", "run_hybrid_bot.py"]
+
+# Comandos alternativos para diferentes modos:
+# Para desarrollo: CMD ["python", "run_hybrid_bot.py", "--log-level", "DEBUG", "--verbose"]
+# Para webhook: CMD ["python", "run_hybrid_bot.py", "--webhook"]
+# Para validación: CMD ["python", "run_hybrid_bot.py", "--validate-only"]
